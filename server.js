@@ -1,8 +1,14 @@
 import express from "express";
 import fetch from "node-fetch";
+import path from "path";
 
 const app = express();
 app.use(express.json());
+
+// rota para servir o index.html
+app.get("/", (req, res) => {
+  res.sendFile(path.join(process.cwd(), "index.html"));
+});
 
 app.post("/api/gerar-pix", async (req, res) => {
   const { valor } = req.body;
@@ -10,7 +16,7 @@ app.post("/api/gerar-pix", async (req, res) => {
   const resposta = await fetch("https://api.mercadopago.com/v1/payments", {
     method: "POST",
     headers: {
-      "Authorization": `Bearer ${process.env.ACCESS_TOKEN}`,
+      Authorization: `Bearer ${process.env.ACCESS_TOKEN}`,
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
