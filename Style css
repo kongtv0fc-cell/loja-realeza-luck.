@@ -1,52 +1,80 @@
+/* Fonte moderna */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap');
+
 body {
-  background-color: #0a0a2a;
-  color: white;
-  font-family: Arial, sans-serif;
+  font-family: 'Poppins', sans-serif;
+  background: #f5f5f5;
+  color: #333;
+  margin: 0;
+  padding: 0;
+}
+
+/* Cabeçalho */
+header {
+  background: linear-gradient(45deg, #ff004c, #ff7b00);
+  color: #fff;
   text-align: center;
-}
-
-h1 {
-  margin: 20px;
-  font-size: 28px;
-  color: #00ffff;
-}
-
-.container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.card {
-  background: #1a1a3a;
-  border-radius: 10px;
   padding: 20px;
-  margin: 15px;
-  width: 200px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+/* Container dos cards */
+.container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 30px;
+}
+
+/* Card */
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  padding: 20px;
   text-align: center;
-  box-shadow: 0 0 15px #00f;
-  transition: transform 0.2s;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .card:hover {
   transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
 }
 
-.card .logo {
+/* Logo */
+.logo {
   width: 80px;
-  margin-bottom: 10px;
+  height: auto;
+  margin-bottom: 15px;
 }
 
-button {
-  background: #ff0066;
-  color: white;
-  border: none;
-  padding: 10px;
+/* Títulos */
+.card h2 {
+  font-size: 1.2rem;
+  margin: 10px 0;
+  color: #222;
+}
+
+.card p {
+  margin: 5px 0;
+  font-size: 0.95rem;
+}
+
+/* Botões */
+.btn {
+  display: inline-block;
+  margin-top: 15px;
+  background: linear-gradient(45deg, #ff004c, #ff7b00);
+  color: #fff;
+  padding: 10px 20px;
   border-radius: 8px;
-  cursor: pointer;
-  margin-top: 10px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: background 0.3s;
 }
 
-button:hover {
-  background: #ff3399;
+.btn:hover {
+  background: linear-gradient(45deg, #ff7b00, #ff004c);
 }
