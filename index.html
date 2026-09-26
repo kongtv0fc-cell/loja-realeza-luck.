@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Loja da Realeza LUCK</title>
+</head>
+<body>
+  <h1>Bem-vindo à Loja da Realeza LUCK 👑</h1>
+  <p>Valor da compra: R$ 50,00</p>
+  <button onclick="gerarPix()">Gerar PIX</button>
+
+  <div id="resultado"></div>
+
+  <script>
+    async function gerarPix() {
+      const resposta = await fetch("https://loja-realeza-luck.vercel.app/api/gerar-pix", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({valor: 50})
+      });
+      const dados = await resposta.json();
+      document.getElementById("resultado").innerHTML = `
+        <p>Código PIX:</p>
+        <pre>${dados.qr_code}</pre>
+      `;
+    }
+  </script>
+</body>
+</html>
