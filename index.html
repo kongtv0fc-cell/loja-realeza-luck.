@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LUCK SHOP</title>
+<link href="https://fonts.googleapis.com/css2?family=Red+Hat+Display:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#070b16;--card:#0d1322;--card2:#111a2e;--text:#eef2fa;--muted:#8b9ab8;--accent:#4f8bff;--accent2:#22d3ee;--green:#22c55e;--red:#ef4444;--yellow:#eab308;--border:rgba(139,154,184,.14);}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"Red Hat Display",sans-serif;background:radial-gradient(900px 520px at 50% -6%,rgba(79,139,255,.20),transparent 62%),var(--bg);color:var(--text);min-height:100vh;}
+.reveal{opacity:0;transform:translateY(18px);animation:fadeUp .55s ease forwards;}
+@keyframes fadeUp{to{opacity:1;transform:translateY(0);}}
+.prod-card{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease;}
+.prod-card:hover{transform:translateY(-4px);border-color:rgba(79,139,255,.55)!important;box-shadow:0 14px 44px rgba(79,139,255,.20);}
+.btn{min-height:42px;border:none;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;transition:filter .2s,transform .1s;font-family:inherit;}
+.btn:hover{filter:brightness(1.1);}
+.btn:active{transform:scale(.97);}
+.btn-blue{background:linear-gradient(180deg,#5b9bff,#3b76e8);color:#fff;}
+.btn-green{background:linear-gradient(180deg,#22c55e,#16a34a);color:#fff;}
+.btn-yellow{background:linear-gradient(180deg,#eab308,#ca8a04);color:#000;}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--muted);font-weight:700;}
+.btn-sm{padding:6px 12px;min-height:unset;font-size:12px;border-radius:6px;width:auto;}
+.w-full{width:100%;}
+input{width:100%;padding:12px 14px;border-radius:10px;background:var(--card2);border:1px solid var(--border);color:var(--text);font-size:14px;outline:none;font-family:inherit;}
+input:focus{border-color:var(--accent);}
+input.sm{padding:6px 10px;font-size:13px;width:100px;}
+.modal{display:none;position:fixed;inset:0;z-index:50;background:rgba(3,6,14,.85);backdrop-filter:blur(4px);padding:20px;overflow-y:auto;}
+.modal.active{display:flex;align-items:flex-start;justify-content:center;}
+.modal-card{max-width:420px;width:100%;margin-top:40px;background:var(--card);border:1px solid rgba(79,139,255,.4);border-radius:18px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+.modal-card.lg{max-width:600px;}
+.tab-btn{flex:1;padding:12px;border:none;background:transparent;color:var(--muted);font-weight:700;cursor:pointer;border-bottom:2px solid transparent;font-family:inherit;font-size:14px;}
+.tab-btn.active{color:var(--accent2);border-bottom-color:var(--accent2);}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:100%;max-width:380px;background:var(--card);border-left:1px solid var(--border);transform:translateX(100%);transition:transform .3s ease;z-index:55;overflow-y:auto;}
+.drawer.open{transform:translateX(0);}
+.drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);opacity:0;visibility:hidden;transition:all .3s;z-index:54;}
+.drawer-overlay.active{opacity:1;visibility:visible;}
+.badge{padding:3px 8px;border-radius:10px;font-size:11px;font-weight:700;}
+.badge.pending{background:rgba(234,179,8,.15);color:#eab308;}
+.badge.delivered{background:rgba(34,197,94,.15);color:#22c55e;}
+.row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--border);gap:8px;}
+.admin-only{display:none;}
+body.admin-logged .admin-only{display:block;}
+.qty-btn{width:32px;height:32px;border-radius:8px;background:var(--card2);border:none;color:var(--text);font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:1024px){.grid{grid-template-columns:repeat(4,1fr);}}
+.streak{position:absolute;top:0;left:32%;width:54px;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);transform:skewX(-18deg);pointer-events:none;}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--green);color:#052e12;font-weight:800;font-size:13px;padding:12px 20px;border-radius:12px;z-index:99;display:none;}
+.toast.show{display:block;animation:toastIn .3s ease;}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,12px);}to{opacity:1;transform:translate(-50%,0);}}
+
+/* ============ EFEITO GELO / NEVE ROXA ============ */
+#icefall{
+  position:fixed;
+  inset:0;
+  z-index:5;
+  pointer-events:none;
+  overflow:hidden;
+  background:linear-gradient(180deg,rgba(91,35,145,.08),rgba(42,12,74,.04));
+}
+.ice-flake{
+  position:absolute;
+  top:-40px;
+  width:var(--size);
+  height:var(--size);
+  border-radius:50%;
+  background:rgba(255,255,255,.88);
+  box-shadow:0 0 6px rgba(196,181,253,.9),0 0 14px rgba(168,85,247,.55);
+  opacity:var(--opacity);
+  filter:blur(var(--blur));
+  animation:iceFall var(--duration) linear var(--delay) infinite;
+}
+.ice-flake::after{
+  content:"";
+  position:absolute;
+  inset:-45%;
+  border-radius:50%;
+  border:1px solid rgba(221,214,254,.18);
+}
+@keyframes iceFall{
+  0%{transform:translate3d(0,-50px,0) rotate(0deg);opacity:0}
+  8%{opacity:var(--opacity)}
+  50%{transform:translate3d(var(--drift),55vh,0) rotate(180deg)}
+  92%{opacity:var(--opacity)}
+  100%{transform:translate3d(calc(var(--drift) * -0.45),110vh,0) rotate(360deg);opacity:0}
+}
+@media(prefers-reduced-motion:reduce){
+  .ice-flake{animation:none;opacity:.35}
+}
+</style>
+</head>
+<body>
+  <div id="icefall" aria-hidden="true"></div>
+
+<header style="position:sticky;top:0;z-index:40;background:rgba(7,11,22,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);">
+  <div style="max-width:1200px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:0;">
+      <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,#4f8bff,#22d3ee);display:flex;align-items:center;justify-content:center;font-weight:900;color:#070b16;font-size:16px;flex-shrink:0;">L</div>
+      <span style="font-weight:900;font-size:18px;white-space:nowrap;">LUCK SHOP</span>
+    </div>
+    <button id="searchBtn" class="btn btn-ghost" style="width:42px;padding:0;">&#128269;</button>
+    <button id="supportBtn" class="btn btn-ghost" style="width:42px;padding:0;">&#128222;</button>
+    <button id="cartBtn" class="btn btn-blue" style="width:42px;padding:0;position:relative;">
+      &#128722;<span id="cartCount" style="position:absolute;top:-6px;right:-6px;background:#ef4444;color:#fff;font-size:10px;font-weight:800;padding:2px 5px;border-radius:10px;display:none;">0</span>
+    </button>
+    <div id="userArea"></div>
+  </div>
+  <div id="searchBar" style="display:none;max-width:1200px;margin:0 auto;padding:0 16px 12px;">
+    <input id="searchInput" type="text" placeholder="Buscar plataforma (ex: Netflix, Spotify)..." />
+  </div>
+</header>
+
+<main style="max-width:1200px;margin:0 auto;padding:20px 16px 60px;">
+
+  <div id="adminPanel" class="admin-only" style="background:var(--card);border:2px solid var(--yellow);border-radius:14px;padding:20px;margin-bottom:24px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+      <h3 style="font-size:18px;font-weight:900;color:var(--yellow);">&#9881;&#65039; PAINEL DO DONO</h3>
+      <button id="adminLogout" class="btn btn-ghost btn-sm">Sair do Painel</button>
+    </div>
+    <div style="margin-bottom:24px;">
+      <h4 style="font-weight:700;margin-bottom:12px;color:var(--muted);font-size:14px;">&#128176; Editar Pre&ccedil;os — altere o valor e clique em Salvar</h4>
+      <div id="priceEditor"></div>
+    </div>
+    <div>
+      <h4 style="font-weight:700;margin-bottom:12px;color:var(--muted);font-size:14px;">&#128203; Pedidos Recebidos</h4>
+      <div id="ordersList"><p style="color:var(--muted);font-size:13px;">Nenhum pedido ainda.</p></div>
+    </div>
+  </div>
+
+  <div class="reveal" style="display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:18px;">
+    <span style="font-size:20px;">&#127916;</span>
+    <h2 style="font-size:18px;font-weight:900;">Streaming e Assinaturas</h2>
+  </div>
+
+  <div id="grid" class="grid"></div>
+
+  <footer style="margin-top:48px;padding-top:20px;border-top:1px solid var(--border);text-align:center;color:var(--muted);font-size:12px;">
+    <p style="margin:0 0 4px;font-weight:700;color:var(--text);">LUCK SHOP — As melhores assinaturas com entrega imediata</p>
+    <p style="margin:0;">Pagamento via PIX &middot; Atendimento 24h &middot; WhatsApp: (21) 99754-8723</p>
+  </footer>
+</main>
+
+<!-- MODAL AUTH -->
+<div id="authModal" class="modal">
+  <div class="modal-card">
+    <div style="display:flex;border-bottom:1px solid var(--border);">
+      <button class="tab-btn active" data-tab="login">Cliente</button>
+      <button class="tab-btn" data-tab="admin">&#128274; Admin</button>
+      <button class="tab-btn" data-tab="register">Criar Conta</button>
+    </div>
+    <div id="loginForm" style="padding:24px;">
+      <h3 style="font-size:20px;font-weight:900;margin-bottom:20px;">Acesse sua conta</h3>
+      <div style="margin-bottom:14px;"><label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px;">E-mail</label><input type="email" id="loginEmail" placeholder="seu@email.com" /></div>
+      <div style="margin-bottom:10px;"><label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px;">Senha</label><input type="password" id="loginPass" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" /></div>
+      <p id="loginError" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none;">E-mail ou senha incorretos</p>
+      <button id="doLogin" class="btn btn-blue w-full" style="margin-bottom:10px;">Entrar</button>
+      <button id="closeAuth" class="btn btn-ghost w-full">Cancelar</button>
+    </div>
+    <div id="adminForm" style="padding:24px;display:none;">
+      <h3 style="font-size:20px;font-weight:900;margin-bottom:20px;">&#128274; Acesso do Dono</h3>
+      <div style="margin-bottom:14px;"><label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px;">E-mail Admin</label><input type="email" id="adminEmail" value="lgomes3213@gmail.com" readonly style="background:rgba(79,139,255,.05);" /></div>
+      <div style="margin-bottom:10px;"><label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px;">Senha</label><input type="password" id="adminPass" placeholder="Digite sua senha" /></div>
+      <p id="adminError" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none;">Senha incorreta</p>
+      <button id="doAdminLogin" class="btn btn-yellow w-full" style="margin-bottom:10px;">&#128275; Entrar no Painel</button>
+      <button id="closeAuth2" class="btn btn-ghost w-full">Cancelar</button>
+    </div>
+    <div id="registerForm" style="padding:24px;display:none;">
+      <h3 style="font-size:20px;font-weight:900;margin-bottom:20px;">Criar sua conta</h3>
+      <div style="margin-bottom:14px;"><label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px;">Nome completo</label><input type="text" id="regName" placeholder="Seu nome" /></div>
+      <div style="margin-bottom:14px;"><label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px;">E-mail</label><input type="email" id="regEmail" placeholder="seu@email.com" /></div>
+      <div style="margin-bottom:10px;"><label style="font-size:13px;color:var(--muted);display:block;margin-bottom:6px;">Senha (m&iacute;nimo 6 caracteres)</label><input type="password" id="regPass" placeholder="&#8226;&#8226;&#8226;&#8226;&#8226;&#8226;" /></div>
+      <p id="regError" style="color:var(--red);font-size:12px;margin-bottom:10px;display:none;"></p>
+      <button id="doRegister" class="btn btn-blue w-full" style="margin-bottom:10px;">Criar Conta</button>
+      <button id="closeAuth3" class="btn btn-ghost w-full">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PRODUTO -->
+<div id="productModal" class="modal">
+  <div class="modal-card" id="prodContent"></div>
+</div>
+
+<!-- CARRINHO -->
+<div id="cartDrawerOverlay" class="drawer-overlay"></div>
+<div id="cartDrawer" class="drawer">
+  <div style="padding:20px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <h3 style="font-size:18px;font-weight:900;">Meu Carrinho</h3>
+      <button id="closeCart" style="background:none;border:none;color:var(--muted);font-size:24px;cursor:pointer;line-height:1;">&times;</button>
+    </div>
+    <div id="cartItems"><p style="color:var(--muted);text-align:center;padding:20px;">Seu carrinho est&aacute; vazio</p></div>
+    <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:16px;">
+      <div style="display:flex;justify-content:space-between;font-weight:800;font-size:18px;margin-bottom:16px;">
+        <span>Total</span><span id="cartTotal">R$ 0,00</span>
+      </div>
+      <button id="checkoutBtn" class="btn btn-green w-full" style="font-size:15px;">Finalizar Compra &rarr;</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PIX -->
+<div id="pixModal" class="modal">
+  <div class="modal-card" style="padding:24px;text-align:center;" id="pixContent"></div>
+</div>
+
+<!-- MODAL SUCESSO -->
+<div id="successModal" class="modal">
+  <div class="modal-card" style="padding:24px;text-align:center;" id="successContent"></div>
+</div>
+
+<!-- MODAL SUPORTE -->
+<div id="supportModal" class="modal">
+  <div class="modal-card" style="padding:24px;text-align:center;">
+    <h3 style="font-size:20px;font-weight:900;margin-bottom:10px;">Precisa de ajuda?</h3>
+    <p style="color:var(--muted);margin-bottom:20px;">Atendimento via WhatsApp (21) 99754-8723</p>
+    <a id="waSupport" href="#" target="_blank" style="display:block;width:100%;padding:14px;background:#25d366;color:#fff;font-weight:800;border-radius:10px;text-decoration:none;margin-bottom:10px;">&#128241; Falar no WhatsApp</a>
+    <button id="closeSupport" class="btn btn-ghost w-full">Fechar</button>
+  </div>
+</div>
+
+<!-- MODAL MEUS PEDIDOS -->
+<div id="myOrdersModal" class="modal">
+  <div class="modal-card lg" style="padding:24px;">
+    <h3 style="font-size:20px;font-weight:900;margin-bottom:20px;">&#128230; Meus Pedidos</h3>
+    <div id="myOrdersList"><p style="color:var(--muted);text-align:center;">Voc&ecirc; ainda n&atilde;o fez nenhum pedido.</p></div>
+    <button id="closeMyOrders" class="btn btn-ghost w-full" style="margin-top:20px;">Fechar</button>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ CONFIGURACAO DO DONO ============ */
+var WA_NUMBER = "5521997548723";
+var ADMIN_EMAIL = "lgomes3213@gmail.com";
+var ADMIN_PASS = "Minas1010@";
+var ORDERS_WEBHOOK_URL = ""; // (opcional) URL do Google Apps Script para salvar pedidos em planilha
+
+/* ============ LOGOS (URLs validadas) ============ */
+var L="https://p16-cc-image-search-sign-sg.ibyteimg.com/tos-alisg-i-h9hire4aei-sg/";
+var L19="https://p19-cc-image-search-sign-sg.ibyteimg.com/tos-alisg-i-h9hire4aei-sg/";
+var Q="~tplv-h9hire4aei-image.jpeg?rk3s=feb11e32";
+
+var products=[
+ {id:1,brand:"NETFLIX",name:"Netflix Premium 4K",price:6.99,c1:"#1a1a1a",c2:"#e50914",tileBg:"#000",logo:L+"image/33dc37fe94c96d856c8fbe8b6862204b"+Q+"&x-expires=1806012883&x-signature=IeASN5c4%2FU7kz6u4saphVBQJoBE%3D"},
+ {id:2,brand:"DISNEY+",name:"Disney Premium 4K",price:4.99,c1:"#0a2540",c2:"#1a8fc9",tileBg:"#0d3b66",logo:L+"image/1391367f4c6d888d5263cb310c0281fb"+Q+"&x-expires=1806012885&x-signature=%2B3rBSb%2Fd%2FhwdT2eEOZGkjcTgxYs%3D"},
+ {id:3,brand:"HBO MAX",name:"HBO Max",price:4.99,c1:"#2a0a4a",c2:"#a855f7",tileBg:"#2a0a4a",logo:L19+"image/cd1b58ae96b57c852e6981e609365798"+Q+"&x-expires=1806012913&x-signature=CxnP%2Bb7NVB%2Bnc8THQUtBWxXXLzg%3D"},
+ {id:4,brand:"GLOBO PLAY+",name:"Globoplay Premium",price:4.99,c1:"#ff4d00",c2:"#ff8a00",tileBg:"#ff4d00",logo:L+"image/72d4775ce81f8e979931c7de4d79d3df"+Q+"&x-expires=1806012943&x-signature=tE0OZ0uGiLHlpVWp%2F3LeiRJGRvk%3D"},
+ {id:5,brand:"PRIME VIDEO",name:"Prime V\u00eddeo +",price:3.99,c1:"#003c71",c2:"#00a8e1",tileBg:"#00a8e1",logo:L+"img/6815c5004f2d962311a85de2523acf26"+Q+"&x-expires=1806012890&x-signature=aUip32OKfdzXHdqpU3%2BafLaDmyo%3D"},
+ {id:6,brand:"PARAMOUNT+",name:"Paramount +",price:3.99,c1:"#004080",c2:"#0064b1",tileBg:"#0064b1",logo:L+"img/aa545b10c931ed8d4047ef2d3f3c4b5d"+Q+"&x-expires=1806012916&x-signature=lH3BYErsi4UQHpbhZi3q8s0jqB0%3D"},
+ {id:7,brand:"SPOTIFY",name:"Spotify Premium",price:6.99,c1:"#121212",c2:"#1db954",tileBg:"#000",logo:L+"img/9b74a1094ba83bee715c158e33bf9e3e"+Q+"&x-expires=1806012888&x-signature=HeHDitWUJLxEuzsZl6FPOTJQYyQ%3D"},
+ {id:8,brand:"DEEZER",name:"Deezer Premium",price:5.99,c1:"#121212",c2:"#a238ff",tileBg:"#000",logo:L+"image/b81cb875adf7d1595dcd3631af717cba"+Q+"&x-expires=1806012945&x-signature=1uv18b8wc9tNtdk%2Bnbbx0nN0XAc%3D"},
+ {id:9,brand:"GAME PASS",name:"Xbox Game Pass Ultimate",price:9.99,c1:"#0e4d1e",c2:"#16a34a",tileBg:"#107C10",logo:L+"image/5992ed64302456e3916a787ae95bff8a"+Q+"&x-expires=1806012947&x-signature=GzrgoqBWxxMWxfFRVZwWmNoZr08%3D"},
+ {id:10,brand:"PS PLUS",name:"PS Plus Plano Deluxe",price:38.90,old:76.90,disc:49,c1:"#001f5c",c2:"#0070d1",tileBg:"#003791",logo:L+"image/c6b616a3d8c4be5124a45881b9b10e3b"+Q+"&x-expires=1806012950&x-signature=grsjKAjUYBGR8t%2BKGK1%2FK7quFuI%3D"},
+ {id:11,brand:"SKY+",name:"SKY+",price:12.99,c1:"#8a0410",c2:"#e30613",tileBg:"#e30613",logo:L+"image/463e13ba757ca2625e6f81e3aa5204da"+Q+"&x-expires=1806012979&x-signature=%2F7nEPG8%2BBlCU96dc2VVaXHYYapU%3D"},
+ {id:12,brand:"CLARO TV+",name:"Claro TV +",price:8.99,c1:"#1a1a1a",c2:"#e30613",tileBg:"#111",logo:L19+"image/a4662fda77aea69a192a5ff81e78db2b"+Q+"&x-expires=1806012982&x-signature=lw6kq%2BImq1gp2ktRr9F02YNT2ZM%3D"},
+ {id:13,brand:"CRUNCHYROLL",name:"Crunchyroll",price:4.99,c1:"#b34a00",c2:"#f47521",tileBg:"#ffffff",logo:L+"image/3368ed424f8025dfab3916ce45a146ad"+Q+"&x-expires=1806012921&x-signature=cJTyCd5vAooagaxuYR9pjZ31ke0%3D"},
+ {id:14,brand:"PREMIERE",name:"Premiere",price:59.90,c1:"#064e2b",c2:"#00a854",tileBg:"#064e2b",logo:L19+"image/fc83da92ca243e70d390cee579332c0e"+Q+"&x-expires=1806012985&x-signature=IMOJ5oIeLQcqMDwGSJdDWB9D9Cw%3D"},
+ {id:15,brand:"YOUTUBE",name:"YouTube Premium + Music 30 dias",price:4.99,c1:"#282828",c2:"#ff0000",tileBg:"#ff0000",logo:L+"image/89e66d5e0148e3c16edce2163ca01aae"+Q+"&x-expires=1806012918&x-signature=oF91fn7OzAcih1xO4dqkgtJzq44%3D"}
+];
+
+/* ============ STORAGE ============ */
+function get(k){try{return JSON.parse(localStorage.getItem("luck_"+k));}catch(e){return null;}}
+function set(k,v){localStorage.setItem("luck_"+k,JSON.stringify(v));}
+var users=get("users")||[];
+var orders=get("orders")||[];
+var cart=get("cart")||[];
+var session=get("session")||null;
+var isAdmin=get("admin")||false;
+var savedPrices=get("prices");
+if(savedPrices){products.forEach(function(p){if(savedPrices[p.id]!==undefined)p.price=savedPrices[p.id];});}
+
+/* ============ HELPERS ============ */
+function fmt(v){return "R$ "+v.toFixed(2).replace(".",",");}
+function $(id){return document.getElementById(id);}
+function toast(msg){
+  var t=$("toast");t.textContent=msg;t.classList.add("show");
+  setTimeout(function(){t.classList.remove("show");},2500);
+}
+function cartQty(){return cart.reduce(function(s,i){return s+i.qty;},0);}
+function cartTotal(){return cart.reduce(function(s,i){var p=products.find(function(x){return x.id===i.id;});return s+(p?p.price*i.qty:0);},0);}
+function saveCart(){set("cart",cart);}
+function updateBadge(){
+  var q=cartQty();$("cartCount").textContent=q;
+  $("cartCount").style.display=q?"block":"none";
+}
+
+/* ============ RENDER GRID ============ */
+function renderGrid(filter){
+  var f=(filter||"").trim().toLowerCase();
+  var list=products.filter(function(p){return !f||p.name.toLowerCase().indexOf(f)>-1||p.brand.toLowerCase().indexOf(f)>-1;});
+  var html="";
+  list.forEach(function(p,i){
+    html+='<div class="prod-card reveal" style="animation-delay:'+(i%6)*0.07+'s;border-radius:16px;overflow:hidden;background:var(--card);border:1px solid var(--border);cursor:pointer;" data-id="'+p.id+'">';
+    html+='<div style="height:104px;background:linear-gradient(135deg,'+p.c1+','+p.c2+');position:relative;display:flex;align-items:center;padding:12px;gap:10px;overflow:hidden;">';
+    html+='<div class="streak"></div>';
+    html+='<div style="width:52px;height:52px;border-radius:12px;background:'+p.tileBg+';overflow:hidden;flex-shrink:0;box-shadow:0 4px 14px rgba(0,0,0,.35);"><img src="'+p.logo+'" alt="'+p.brand+'" loading="lazy" onerror="this.style.display=\'none\'" style="width:100%;height:100%;object-fit:cover;display:block;" /></div>';
+    html+='<div style="font-weight:900;font-size:17px;color:#fff;line-height:1.1;text-shadow:0 2px 8px rgba(0,0,0,.45);">'+p.brand+'</div>';
+    html+='<div style="position:absolute;bottom:8px;left:10px;background:rgba(0,0,0,.55);color:#7dd3fc;font-size:9px;padding:2px 7px;border-radius:4px;font-weight:800;">ENTREGA IMEDIATA</div>';
+    html+='</div>';
+    html+='<div style="padding:12px;">';
+    html+='<div style="font-size:12px;color:var(--muted);margin-bottom:8px;min-height:32px;line-height:1.3;">'+p.name.toUpperCase()+'</div>';
+    if(p.old){html+='<div style="font-size:11px;color:var(--muted);text-decoration:line-through;">'+fmt(p.old)+'</div>';}
+    html+='<div style="font-size:20px;font-weight:900;color:var(--accent2);">'+fmt(p.price)+'</div>';
+    html+='<button class="btn btn-blue w-full" style="margin-top:10px;font-size:13px;padding:10px;">Ver Detalhes</button>';
+    html+='</div></div>';
+  });
+  $("grid").innerHTML=html;
+  $("grid").querySelectorAll(".prod-card").forEach(function(c){
+    c.addEventListener("click",function(){openProduct(parseInt(c.getAttribute("data-id"),10));});
+  });
+}
+renderGrid("");
+
+/* ============ USER AREA ============ */
+function renderUserArea(){
+  var area=$("userArea");
+  if(isAdmin){
+    document.body.classList.add("admin-logged");
+    renderPriceEditor();renderOrders();
+    area.innerHTML='<button id="adminBtn" class="btn btn-yellow" style="padding:0 12px;font-size:13px;">&#9881;&#65039; Painel</button> <button id="adminLogout2" class="btn btn-ghost btn-sm">Sair</button>';
+    $("adminBtn").onclick=function(){window.scrollTo({top:0,behavior:"smooth"});};
+    $("adminLogout2").onclick=adminLogout;
+  }else if(session){
+    document.body.classList.remove("admin-logged");
+    var ini=session.name.charAt(0).toUpperCase();
+    area.innerHTML='<button id="userBtn" class="btn btn-blue" style="padding:0 12px;font-size:13px;">'+ini+' '+session.name.split(" ")[0]+'</button> <button id="myOrdersBtn" class="btn btn-ghost btn-sm">Pedidos</button> <button id="userLogout" class="btn btn-ghost btn-sm">Sair</button>';
+    $("userBtn").onclick=function(){toast("Ol\u00e1, "+session.name+"!");};
+    $("myOrdersBtn").onclick=function(){renderMyOrders();$("myOrdersModal").classList.add("active");};
+    $("userLogout").onclick=function(){session=null;set("session",null);renderUserArea();toast("Voc\u00ea saiu da conta.");};
+  }else{
+    document.body.classList.remove("admin-logged");
+    area.innerHTML='<button id="loginBtn" class="btn btn-ghost" style="padding:0 16px;">Entrar</button>';
+    $("loginBtn").onclick=function(){openAuth("login");};
+  }
+}
+function adminLogout(){isAdmin=false;set("admin",false);renderUserArea();toast("Saiu do painel admin.");}
+$("adminLogout").onclick=adminLogout;
+renderUserArea();
+
+/* ============ AUTH MODAL ============ */
+function openAuth(tab){
+  $("authModal").classList.add("active");
+  setTab(tab);
+}
+function setTab(tab){
+  document.querySelectorAll(".tab-btn").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-tab")===tab);});
+  $("loginForm").style.display=tab==="login"?"block":"none";
+  $("adminForm").style.display=tab==="admin"?"block":"none";
+  $("registerForm").style.display=tab==="register"?"block":"none";
+}
+document.querySelectorAll(".tab-btn").forEach(function(b){b.onclick=function(){setTab(b.getAttribute("data-tab"));};});
+function closeAuth(){$("authModal").classList.remove("active");}
+$("closeAuth").onclick=closeAuth;$("closeAuth2").onclick=closeAuth;$("closeAuth3").onclick=closeAuth;
+$("authModal").addEventListener("click",function(e){if(e.target===$("authModal"))closeAuth();});
+
+$("doLogin").onclick=function(){
+  var em=$("loginEmail").value.trim().toLowerCase();
+  var pw=$("loginPass").value;
+  var u=users.find(function(x){return x.email===em;});
+  if(!u||u.pass!==pw){$("loginError").style.display="block";return;}
+  session={name:u.name,email:u.email};set("session",session);
+  closeAuth();$("loginError").style.display="none";renderUserArea();
+  toast("Bem-vindo(a), "+u.name.split(" ")[0]+"!");
+};
+$("doAdminLogin").onclick=function(){
+  var pw=$("adminPass").value;
+  if(pw!==ADMIN_PASS){$("adminError").style.display="block";return;}
+  isAdmin=true;set("admin",true);
+  closeAuth();$("adminError").style.display="none";renderUserArea();
+  toast("Painel do dono liberado!");
+  window.scrollTo({top:0,behavior:"smooth"});
+};
+$("doRegister").onclick=function(){
+  var nm=$("regName").value.trim();
+  var em=$("regEmail").value.trim().toLowerCase();
+  var pw=$("regPass").value;
+  var err=$("regError");
+  if(!nm||!em||!pw){err.textContent="Preencha todos os campos.";err.style.display="block";return;}
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)){err.textContent="E-mail inv\u00e1lido.";err.style.display="block";return;}
+  if(pw.length<6){err.textContent="Senha deve ter ao menos 6 caracteres.";err.style.display="block";return;}
+  if(users.find(function(x){return x.email===em;})){err.textContent="Este e-mail j\u00e1 possui conta.";err.style.display="block";return;}
+  users.push({name:nm,email:em,pass:pw});set("users",users);
+  session={name:nm,email:em};set("session",session);
+  closeAuth();err.style.display="none";renderUserArea();
+  toast("Conta criada! Bem-vindo(a)!");
+};
+
+/* ============ PRODUCT MODAL ============ */
+var curProd=null;
+function openProduct(id){
+  var p=products.find(function(x){return x.id===id;});if(!p)return;curProd=p;
+  $("prodContent").innerHTML=
+    '<div style="height:90px;background:linear-gradient(135deg,'+p.c1+','+p.c2+');display:flex;align-items:center;gap:12px;padding:16px;">'+
+    '<div style="width:52px;height:52px;border-radius:12px;background:'+p.tileBg+';overflow:hidden;flex-shrink:0;"><img src="'+p.logo+'" alt="'+p.brand+'" style="width:100%;height:100%;object-fit:cover;display:block;" onerror="this.style.display=\'none\'" /></div>'+
+    '<div style="font-weight:900;font-size:22px;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4);">'+p.brand+'</div></div>'+
+    '<div style="padding:24px;">'+
+    '<h3 style="margin:0 0 10px;font-size:18px;font-weight:900;">'+p.name.toUpperCase()+'</h3>'+
+    '<div style="font-size:28px;font-weight:900;color:var(--accent2);">'+fmt(p.price)+'</div>'+
+    '<div style="font-size:12px;color:var(--muted);margin-bottom:18px;">\u00c0 vista no PIX &middot; Entrega em at\u00e9 5 minutos</div>'+
+    '<ul style="margin:0 0 24px;padding-left:18px;color:var(--muted);font-size:13px;line-height:2;"><li>Conta Premium com garantia</li><li>Acesso imediato ap\u00f3s confirma\u00e7\u00e3o</li><li>Entrega via WhatsApp ou e-mail</li></ul>'+
+    '<div style="display:flex;gap:10px;"><button id="dmClose" class="btn btn-ghost" style="flex:1;">Fechar</button>'+
+    '<button id="dmAdd" class="btn btn-blue" style="flex:1.4;">Comprar Agora</button></div></div>';
+  $("productModal").classList.add("active");
+  $("dmClose").onclick=function(){$("productModal").classList.remove("active");};
+  $("dmAdd").onclick=function(){addToCart(p.id);$("productModal").classList.remove("active");openCart();};
+}
+$("productModal").addEventListener("click",function(e){if(e.target===$("productModal"))$("productModal").classList.remove("active");});
+
+/* ============ CART ============ */
+function addToCart(id){
+  var it=cart.find(function(i){return i.id===id;});
+  if(it){it.qty++;}else{cart.push({id:id,qty:1});}
+  saveCart();updateBadge();
+  var p=products.find(function(x){return x.id===id;});
+  toast(p.name+" adicionado!");
+}
+function openCart(){renderCart();$("cartDrawer").classList.add("open");$("cartDrawerOverlay").classList.add("active");}
+function closeCart(){$("cartDrawer").classList.remove("open");$("cartDrawerOverlay").classList.remove("active");}
+function renderCart(){
+  var c=$("cartItems");
+  if(!cart.length){c.innerHTML='<p style="color:var(--muted);text-align:center;padding:20px;">Seu carrinho est\u00e1 vazio</p>';$("cartTotal").textContent="R$ 0,00";return;}
+  var html="";
+  cart.forEach(function(it,idx){
+    var p=products.find(function(x){return x.id===it.id;});if(!p)return;
+    html+='<div class="row"><div style="flex:1;min-width:0;"><div style="font-weight:700;font-size:13px;">'+p.name+'</div><div style="font-size:12px;color:var(--muted);">'+fmt(p.price)+'</div></div>'+
+    '<div style="display:flex;align-items:center;gap:8px;"><button class="qty-btn" data-act="-" data-idx="'+idx+'">&minus;</button>'+
+    '<span style="min-width:24px;text-align:center;font-weight:800;">'+it.qty+'</span>'+
+    '<button class="qty-btn" data-act="+" data-idx="'+idx+'">+</button></div></div>';
+  });
+  c.innerHTML=html;
+  c.querySelectorAll(".qty-btn").forEach(function(b){
+    b.onclick=function(){
+      var idx=parseInt(b.getAttribute("data-idx"),10);
+      if(b.getAttribute("data-act")==="+"){cart[idx].qty++;}
+      else{cart[idx].qty--;if(cart[idx].qty<=0)cart.splice(idx,1);}
+      saveCart();updateBadge();renderCart();
+    };
+  });
+  $("cartTotal").textContent=fmt(cartTotal());
+}
+$("cartBtn").onclick=openCart;
+$("closeCart").onclick=closeCart;
+$("cartDrawerOverlay").onclick=closeCart;
+updateBadge();
+
+/* ============ CHECKOUT / PIX ============ */
+var pendingOrder=null;
+$("checkoutBtn").onclick=function(){
+  if(!cart.length){toast("Carrinho vazio!");return;}
+  if(!session){closeCart();openAuth("login");toast("Fa\u00e7a login para finalizar.");return;}
+  var total=cartTotal();
+  var oid="#LK"+String(Date.now()).slice(-6);
+  var names=cart.map(function(i){var p=products.find(function(x){return x.id===i.id;});return p?p.name:"";}).filter(Boolean).join(" + ");
+  pendingOrder={id:oid,product:names,price:fmt(total),name:session.name,email:session.email,date:new Date().toLocaleString("pt-BR"),status:"pending"};
+  closeCart();
+  $("pixContent").innerHTML=
+    '<h3 style="font-size:20px;font-weight:900;margin-bottom:6px;">Pagamento via PIX</h3>'+
+    '<p style="color:var(--muted);font-size:13px;margin-bottom:20px;">Pedido: '+oid+' &middot; '+fmt(total)+'</p>'+
+    '<div style="width:200px;height:200px;background:#fff;border-radius:12px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center;color:#333;font-size:13px;padding:10px;text-align:center;">'+
+    '<div><div style="font-weight:800;margin-bottom:8px;">QR Code PIX</div>'+
+    '<div style="background:#f5f5f5;padding:10px;border-radius:6px;font-size:11px;line-height:1.6;">Chave: '+ADMIN_EMAIL+'<br>Valor: <strong>'+fmt(total)+'</strong></div></div></div>'+
+    '<p style="font-size:12px;color:var(--muted);margin-bottom:10px;">Escaneie no app do seu banco ou copie a chave</p>'+
+    '<button id="copyPix" class="btn btn-ghost w-full" style="margin-bottom:20px;">&#128203; Copiar chave PIX</button>'+
+    '<div style="background:rgba(34,197,94,.1);border-radius:10px;padding:14px;margin-bottom:16px;text-align:left;">'+
+    '<p style="font-weight:700;color:var(--green);margin-bottom:6px;">&#128230; Depois do pagamento</p>'+
+    '<p style="font-size:12px;color:var(--muted);line-height:1.6;">O vendedor recebe seu pedido no WhatsApp e envia os dados de acesso em at\u00e9 5 minutos.</p></div>'+
+    '<button id="paidBtn" class="btn btn-green w-full" style="margin-bottom:10px;">&#9989; J\u00e1 realizei o pagamento</button>'+
+    '<button id="closePix" class="btn btn-ghost w-full">Voltar</button>';
+  $("pixModal").classList.add("active");
+  $("copyPix").onclick=function(){
+    var ta=document.createElement("textarea");ta.value=ADMIN_EMAIL;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");toast("Chave PIX copiada!");}catch(e){toast("Chave: "+ADMIN_EMAIL);}
+    document.body.removeChild(ta);
+  };
+  $("closePix").onclick=function(){$("pixModal").classList.remove("active");};
+  $("paidBtn").onclick=function(){
+    orders.unshift(pendingOrder);set("orders",orders);
+    if(ORDERS_WEBHOOK_URL){try{fetch(ORDERS_WEBHOOK_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(pendingOrder)});}catch(e){}}
+    // Aviso WhatsApp para o dono
+    var msg="NOVO PEDIDO "+oid+"%0A%0ACliente: "+encodeURIComponent(session.name)+"%0AE-mail: "+session.email+"%0AProduto(s): "+encodeURIComponent(names)+"%0AValor: "+encodeURIComponent(fmt(total))+"%0AData: "+encodeURIComponent(pendingOrder.date);
+    window.open("https://wa.me/"+WA_NUMBER+"?text="+msg,"_blank");
+    cart=[];saveCart();updateBadge();renderCart();
+    $("pixModal").classList.remove("active");
+    $("successContent").innerHTML=
+      '<div style="width:64px;height:64px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:32px;color:#fff;">&#10003;</div>'+
+      '<h3 style="font-size:20px;font-weight:900;margin-bottom:6px;">Pedido realizado!</h3>'+
+      '<p style="color:var(--accent2);font-weight:800;margin-bottom:16px;">'+oid+'</p>'+
+      '<p style="color:var(--muted);font-size:13px;line-height:1.8;margin-bottom:20px;">Avisamos o vendedor no WhatsApp agora mesmo.<br>Os dados de acesso chegam em at\u00e9 5 minutos.</p>'+
+      '<button id="closeSuccess" class="btn btn-blue w-full">Entendido</button>';
+    $("successModal").classList.add("active");
+    $("closeSuccess").onclick=function(){$("successModal").classList.remove("active");renderOrders();renderMyOrders();};
+  };
+};
+$("pixModal").addEventListener("click",function(e){if(e.target===$("pixModal"))$("pixModal").classList.remove("active");});
+$("successModal").addEventListener("click",function(e){if(e.target===$("successModal"))$("successModal").classList.remove("active");});
+
+/* ============ ADMIN: PRECOS ============ */
+function renderPriceEditor(){
+  var html="";
+  products.forEach(function(p){
+    html+='<div class="row"><span style="font-size:13px;font-weight:600;flex:1;">'+p.brand+'</span>'+
+    '<div style="display:flex;align-items:center;gap:8px;">'+
+    '<input type="number" step="0.01" value="'+p.price+'" data-pid="'+p.id+'" class="sm price-inp" style="text-align:right;" />'+
+    '<button class="btn btn-blue btn-sm save-price" data-pid="'+p.id+'">Salvar</button></div></div>';
+  });
+  $("priceEditor").innerHTML=html;
+  $("priceEditor").querySelectorAll(".save-price").forEach(function(b){
+    b.onclick=function(){
+      var id=parseInt(b.getAttribute("data-pid"),10);
+      var inp=document.querySelector('.price-inp[data-pid="'+id+'"]');
+      var nv=parseFloat(inp.value);
+      if(isNaN(nv)||nv<=0){toast("Pre\u00e7o inv\u00e1lido!");return;}
+      var p=products.find(function(x){return x.id===id;});
+      p.price=nv;
+      var sp={};products.forEach(function(x){sp[x.id]=x.price;});set("prices",sp);
+      renderPriceEditor();
+      renderGrid($("searchInput").value);
+      toast(p.brand+" agora custa "+fmt(nv));
+    };
+  });
+}
+
+/* ============ ADMIN: PEDIDOS ============ */
+function renderOrders(){
+  if(!isAdmin)return;
+  if(!orders.length){$("ordersList").innerHTML='<p style="color:var(--muted);font-size:13px;line-height:1.7;">Nenhum pedido salvo neste navegador.<br>Os pedidos chegam automaticamente no seu WhatsApp (21) 99754-8723.<br>Para ver em qualquer dispositivo, conecte uma planilha Google (instru&ccedil;&otilde;es abaixo).</p>';return;}
+  var html="";
+  orders.forEach(function(o,idx){
+    html+='<div style="padding:14px;background:var(--card2);border-radius:10px;margin-bottom:10px;">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:6px;">'+
+    '<span style="font-weight:800;">'+o.id+'</span>'+
+    '<span class="badge '+(o.status==="delivered"?"delivered":"pending")+'">'+(o.status==="delivered"?"&#9989; Entregue":"&#9203; Pendente")+'</span></div>'+
+    '<p style="font-size:13px;line-height:1.7;"><strong>Cliente:</strong> '+o.name+'<br><strong>E-mail:</strong> '+o.email+'<br><strong>Produto:</strong> '+o.product+'<br><strong>Valor:</strong> '+o.price+'<br><strong>Data:</strong> '+o.date+'</p>';
+    if(o.status!=="delivered"){
+      html+='<button class="btn btn-green btn-sm mark-del" data-idx="'+idx+'" style="margin-top:8px;">Marcar como Entregue</button>';
+    }
+    html+='</div>';
+  });
+  $("ordersList").innerHTML=html;
+  $("ordersList").querySelectorAll(".mark-del").forEach(function(b){
+    b.onclick=function(){
+      var idx=parseInt(b.getAttribute("data-idx"),10);
+      orders[idx].status="delivered";set("orders",orders);
+      renderOrders();toast("Pedido marcado como entregue!");
+    };
+  });
+}
+
+/* ============ CLIENTE: MEUS PEDIDOS ============ */
+function renderMyOrders(){
+  if(!session){$("myOrdersList").innerHTML='<p style="color:var(--muted);text-align:center;">Fa\u00e7a login para ver seus pedidos.</p>';return;}
+  var mine=orders.filter(function(o){return o.email===session.email;});
+  if(!mine.length){$("myOrdersList").innerHTML='<p style="color:var(--muted);text-align:center;">Voc\u00ea ainda n\u00e3o fez nenhum pedido.</p>';return;}
+  var html="";
+  mine.forEach(function(o){
+    html+='<div style="padding:14px;background:var(--card2);border-radius:10px;margin-bottom:10px;">'+
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;flex-wrap:wrap;gap:6px;">'+
+    '<span style="font-weight:800;">'+o.id+'</span>'+
+    '<span class="badge '+(o.status==="delivered"?"delivered":"pending")+'">'+(o.status==="delivered"?"&#9989; Entregue":"&#9203; Aguardando")+'</span></div>'+
+    '<p style="font-size:13px;line-height:1.7;"><strong>'+o.product+'</strong><br>Valor: '+o.price+'<br>Data: '+o.date+'</p>'+
+    (o.status==="delivered"?'<p style="color:var(--green);font-size:12px;margin-top:6px;">&#128230; Seus dados de acesso foram enviados!</p>':'<p style="color:var(--yellow);font-size:12px;margin-top:6px;">Aguardando confirma\u00e7\u00e3o do pagamento...</p>')+
+    '</div>';
+  });
+  $("myOrdersList").innerHTML=html;
+}
+$("closeMyOrders").onclick=function(){$("myOrdersModal").classList.remove("active");};
+$("myOrdersModal").addEventListener("click",function(e){if(e.target===$("myOrdersModal"))$("myOrdersModal").classList.remove("active");});
+
+/* ============ BUSCA ============ */
+$("searchBtn").onclick=function(){
+  var sb=$("searchBar");
+  var open=sb.style.display==="none"||sb.style.display==="";
+  sb.style.display=open?"block":"none";
+  if(open){$("searchInput").focus();}else{$("searchInput").value="";renderGrid("");}
+};
+$("searchInput").addEventListener("input",function(){renderGrid(this.value);});
+
+/* ============ SUPORTE ============ */
+$("waSupport").href="https://wa.me/"+WA_NUMBER+"?text=Ol%C3%A1!%20Preciso%20de%20ajuda%20com%20um%20pedido.";
+$("supportBtn").onclick=function(){$("supportModal").classList.add("active");};
+$("closeSupport").onclick=function(){$("supportModal").classList.remove("active");};
+$("supportModal").addEventListener("click",function(e){if(e.target===$("supportModal"))$("supportModal").classList.remove("active");});
+
+})();
+
+  /* ============ GERADOR DO EFEITO DE GELO ============ */
+  function createIceFall(){
+    var layer=document.getElementById("icefall");
+    if(!layer)return;
+    var count=window.innerWidth<640?42:78;
+    var frag=document.createDocumentFragment();
+    for(var i=0;i<count;i++){
+      var f=document.createElement("span");
+      f.className="ice-flake";
+      f.style.left=(Math.random()*100)+"vw";
+      f.style.setProperty("--size",(Math.random()*5+2)+"px");
+      f.style.setProperty("--opacity",(Math.random()*.55+.22).toFixed(2));
+      f.style.setProperty("--blur",(Math.random()*1.2).toFixed(2)+"px");
+      f.style.setProperty("--duration",(Math.random()*7+7).toFixed(2)+"s");
+      f.style.setProperty("--delay",(Math.random()*-14).toFixed(2)+"s");
+      f.style.setProperty("--drift",((Math.random()*90)-45).toFixed(0)+"px");
+      frag.appendChild(f);
+    }
+    layer.appendChild(frag);
+  }
+  createIceFall();
+</script>
+</body>
+</html>
